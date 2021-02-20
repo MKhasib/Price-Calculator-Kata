@@ -12,8 +12,7 @@ namespace PriceCalculatorKata
         {
             Product product = new Product ("The Little Prince", 12345, 20.25);
             product.getReport();
-            product.taxPercantage = .21;
-            product.getReport();
+            product.DiscountPercantage = .15F;
             Console.ReadLine();
         }
     }
