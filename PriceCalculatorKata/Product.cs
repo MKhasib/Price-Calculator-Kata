@@ -16,26 +16,34 @@ namespace PriceCalculatorKata
             this.Name = name;
             this.UPCCode = UPCCode;
             this.Price = price;
+            this.totalDiscount = UPCDiscount + relativeDiscountPercantage;
         }
         public String Name { get; set; }
         public int UPCCode { get; private set; }
         public double Price { get; set; }
         public double TaxPercantage { get; set; } = 0.20F;
-        private static double discountPercantage=0;
-        public double DiscountPercantage
+        private static double relativeDiscountPercantage=0;
+        public double RelativeDiscountPercantage
         {
-            get { return discountPercantage; }
+            get { return relativeDiscountPercantage; }
             set
             {
-                discountPercantage = value;
+                relativeDiscountPercantage = value;
+                totalDiscount = relativeDiscountPercantage + UPCDiscount;
                 printDiscount();
             }
-        } 
-
+        }
+        private double UPCDiscount = 0;
+        public void setUPCDiscount(int UPCCode,double discountPercantage)
+        {
+            if (this.UPCCode == UPCCode)
+                UPCDiscount = discountPercantage;
+        }
+        private double totalDiscount = 0;
         private void printDiscount()
         {
             double taxAmount = calculatePriceAmount(Price, TaxPercantage);
-            double discountAmount = calculatePriceAmount(Price, discountPercantage);
+            double discountAmount = calculatePriceAmount(Price, totalDiscount);
             double finalPrice = (Price + taxAmount - discountAmount);
 
             Console.WriteLine($"Price:{convertNumberToStringCurrency(roundNumberToTwoDecimals(finalPrice))}");
@@ -50,12 +58,12 @@ namespace PriceCalculatorKata
                 $"after {roundNumberToTwoDecimals(TaxPercantage * 100)}% tax");
 
             double taxAmount = calculatePriceAmount(Price, TaxPercantage);
-            double discountAmount = calculatePriceAmount(Price, discountPercantage);
+            double discountAmount = calculatePriceAmount(Price, totalDiscount);
             String taxStringAmount = convertNumberToStringCurrency(roundNumberToTwoDecimals(taxAmount));
             String discountStringAmount = convertNumberToStringCurrency(roundNumberToTwoDecimals(discountAmount));
 
             Console.WriteLine($"Tax = {roundNumberToTwoDecimals(TaxPercantage * 100)}%," +
-                $" discount = {roundNumberToTwoDecimals(discountPercantage * 100)}%" +
+                $" discount = {roundNumberToTwoDecimals(totalDiscount * 100)}%" +
                 $" Tax amount = {taxStringAmount}; Discount amount = {discountStringAmount}");
             double finalPrice = (Price + taxAmount - discountAmount);
             Console.WriteLine($"Price before = {convertNumberToStringCurrency(roundNumberToTwoDecimals(Price))}," +
