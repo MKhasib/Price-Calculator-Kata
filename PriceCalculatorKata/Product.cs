@@ -28,19 +28,20 @@ namespace PriceCalculatorKata
 
             Console.WriteLine( $"Product price reported as {price} before tax and {convertNumberToStringCurrency(priceWithTax)} after {roundNumberToTwoDecimals(taxPercantage * 100)}% tax");
         }
-        private String convertNumberToStringCurrency(double price)
-        {
-            return price.ToString("C", CultureInfo.GetCultureInfo("en-US"));
-        }
         private double calculatePriceWithTax(double price, double tax)
         {
-            
+
             return roundNumberToTwoDecimals((price + (price * taxPercantage)));
         }
         private double roundNumberToTwoDecimals(double number)
         {
             return (double)Math.Round(number, 2);
         }
+        private String convertNumberToStringCurrency(double price)
+        {
+            return price.ToString("C", CultureInfo.GetCultureInfo("en-US"));
+        }
+        
       
     }
 }
