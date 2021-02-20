@@ -37,7 +37,9 @@ namespace PriceCalculatorKata
         public void setUPCDiscount(int UPCCode,double discountPercantage)
         {
             if (this.UPCCode == UPCCode)
-                UPCDiscount = discountPercantage;
+            { UPCDiscount = discountPercantage;
+                totalDiscount = relativeDiscountPercantage + UPCDiscount;
+            }
         }
         private double totalDiscount = 0;
         private void printDiscount()
