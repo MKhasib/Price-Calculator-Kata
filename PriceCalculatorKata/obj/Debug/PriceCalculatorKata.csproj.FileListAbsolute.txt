@@ -1,0 +1,7 @@
+C:\Users\ASUS\Desktop\learning\10-C#\12-Price Calculator Kata\PriceCalculatorKata\obj\Debug\PriceCalculatorKata.csprojAssemblyReference.cache
+C:\Users\ASUS\Desktop\learning\10-C#\12-Price Calculator Kata\PriceCalculatorKata\obj\Debug\PriceCalculatorKata.csproj.CoreCompileInputs.cache
+C:\Users\ASUS\Desktop\learning\10-C#\12-Price Calculator Kata\PriceCalculatorKata\bin\Debug\PriceCalculatorKata.exe.config
+C:\Users\ASUS\Desktop\learning\10-C#\12-Price Calculator Kata\PriceCalculatorKata\bin\Debug\PriceCalculatorKata.exe
+C:\Users\ASUS\Desktop\learning\10-C#\12-Price Calculator Kata\PriceCalculatorKata\bin\Debug\PriceCalculatorKata.pdb
+C:\Users\ASUS\Desktop\learning\10-C#\12-Price Calculator Kata\PriceCalculatorKata\obj\Debug\PriceCalculatorKata.exe
+C:\Users\ASUS\Desktop\learning\10-C#\12-Price Calculator Kata\PriceCalculatorKata\obj\Debug\PriceCalculatorKata.pdb
