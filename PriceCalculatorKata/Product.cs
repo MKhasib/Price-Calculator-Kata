@@ -26,6 +26,7 @@ namespace PriceCalculatorKata
         public String Name { get; set; }
         public int UPCCode { get; private set; }
         public double Price { get; set; }
+        public bool CombiningIsMultiplicative { get; set; } = true;
         public static double TaxPercantage { get; set; } = 0.20F;
 
         private static Discount UniversalDiscount = new Discount();
@@ -59,12 +60,13 @@ namespace PriceCalculatorKata
         }
         public void printDiscount()
         {
-            double discountPercantageBeforeTaxation = getDiscountPercantageBeforeTaxation(UPCDiscount, UniversalDiscount);
-            double discountAmountBeforeTaxation = roundNumberToTwoDecimals(calculatePriceAmount(Price, discountPercantageBeforeTaxation));
-            double discountPercantageAfterTaxation = getDiscountPercantageAfterTaxation(UPCDiscount, UniversalDiscount);
-            double discountAmountAfterTaxation = calculatePriceAmount(Price - discountAmountBeforeTaxation, discountPercantageAfterTaxation);
-            Console.WriteLine($"{convertNumberToStringCurrency(roundNumberToTwoDecimals(discountAmountAfterTaxation + discountAmountBeforeTaxation))} amount which was deduced");
+            double price = Price;
+            var discount = calcaulteDiscount(price);
+            Console.WriteLine($"{convertNumberToStringCurrency(roundNumberToTwoDecimals(discount))} amount which was deduced");
         }
+
+        
+
         private List<Expense> expenses = new List<Expense>();
         public void AddExpense(Expense expense)
         {
@@ -72,14 +74,14 @@ namespace PriceCalculatorKata
         }
         public void printReport()
         {
-
+            var price = Price;
+            var discountBeforeTaxation = calculateDiscounBeforeTaxation(price);
+            if(CombiningIsMultiplicative)
+            price -= discountBeforeTaxation;
+            var discountAfterTaxation = calculateDiscounAfterTaxation(price);
             Console.WriteLine($"Cost = {convertNumberToStringCurrency( roundNumberToTwoDecimals(this.Price))}");
-            double discountPercantageBeforeTaxation = getDiscountPercantageBeforeTaxation(UPCDiscount, UniversalDiscount);
-            double discountAmountBeforeTaxation = roundNumberToTwoDecimals(calculatePriceAmount(Price, discountPercantageBeforeTaxation));
-            double taxAmount = roundNumberToTwoDecimals(calculatePriceAmount(Price - discountAmountBeforeTaxation, TaxPercantage));
-            double discountPercantageAfterTaxation = getDiscountPercantageAfterTaxation(UPCDiscount, UniversalDiscount);
-            double discountAmountAfterTaxation = roundNumberToTwoDecimals(calculatePriceAmount(Price - discountAmountBeforeTaxation, discountPercantageAfterTaxation));
-            double discounts = discountAmountBeforeTaxation + discountAmountAfterTaxation;
+            double taxAmount = roundNumberToTwoDecimals(calculatePriceAmount(Price - discountBeforeTaxation, TaxPercantage));
+            double discounts = roundNumberToTwoDecimals(discountBeforeTaxation + discountAfterTaxation);
             Console.WriteLine($"Tax = {convertNumberToStringCurrency(roundNumberToTwoDecimals(taxAmount))}");
             Console.WriteLine($"Discounts = {convertNumberToStringCurrency(roundNumberToTwoDecimals(discounts))}");
             double extraCosts = 0;
@@ -94,25 +96,58 @@ namespace PriceCalculatorKata
             }
             Console.WriteLine($"TOTAL = {convertNumberToStringCurrency(roundNumberToTwoDecimals(Price + taxAmount - discounts + extraCosts))}");
         }
-        private double getDiscountPercantageBeforeTaxation(Discount UPCDiscount, Discount relativeDiscount)
+        private double calcaulteDiscount(double price)
         {
-            double totalPercantage = 0;
-            if (UPCDiscount.IsAppliedBeforeTaxation)
-                totalPercantage += UPCDiscount.DiscountPercantage;
-            if (relativeDiscount.IsAppliedBeforeTaxation)
-                totalPercantage += relativeDiscount.DiscountPercantage;
-            return totalPercantage;
-        }
-        private double getDiscountPercantageAfterTaxation(Discount uPCDiscount, Discount relativeDiscount)
-        {
-            double totalPercantage = 0;
-            if (!UPCDiscount.IsAppliedBeforeTaxation)
-                totalPercantage += UPCDiscount.DiscountPercantage;
-            if (!relativeDiscount.IsAppliedBeforeTaxation)
-                totalPercantage += relativeDiscount.DiscountPercantage;
-            return totalPercantage;
+            var discountBeforeTaxation = calculateDiscounBeforeTaxation(price);
+            price -= discountBeforeTaxation;
+            var discountAfterTaxation = calculateDiscounAfterTaxation(price);
+
+        
+            return roundNumberToTwoDecimals(discountBeforeTaxation+ discountAfterTaxation);
         }
 
+        private double calculateDiscounBeforeTaxation(double price)
+        {
+            var UnverstialDiscountAmountBeforeTaxation = getUnverstialDiscountAmountBeforeTaxation(price);
+            if (CombiningIsMultiplicative)
+                price -= UnverstialDiscountAmountBeforeTaxation;
+            var UPCDiscountAmountBeforeTaxation = getUPCDiscountAmountBeforeTaxation(price);
+            return roundNumberToTwoDecimals(UnverstialDiscountAmountBeforeTaxation + UPCDiscountAmountBeforeTaxation);
+        }
+        private double calculateDiscounAfterTaxation(double price)
+        {
+            var UnverstialDiscountAmountAfterTaxation = getUnverstialDiscountAmountAfterTaxation(price);
+            if (CombiningIsMultiplicative)
+                price -= UnverstialDiscountAmountAfterTaxation;
+            var UPCDiscountAmountAfterTaxation = getUPCDiscountAmountAfterTaxation(price);
+            return roundNumberToTwoDecimals(UnverstialDiscountAmountAfterTaxation + UPCDiscountAmountAfterTaxation);
+        }
+        private double getUPCDiscountAmountBeforeTaxation(double price)
+        {
+            if (UPCDiscount.IsAppliedBeforeTaxation)
+                return roundNumberToTwoDecimals(UPCDiscount.DiscountPercantage * price);
+            return 0;
+        }
+
+        private double getUnverstialDiscountAmountBeforeTaxation(double price)
+        {
+            if (UniversalDiscount.IsAppliedBeforeTaxation)
+                return roundNumberToTwoDecimals(UniversalDiscount.DiscountPercantage * price);
+            return 0;
+        }
+        private double getUPCDiscountAmountAfterTaxation(double price)
+        {
+            if (!UPCDiscount.IsAppliedBeforeTaxation)
+                return roundNumberToTwoDecimals(UPCDiscount.DiscountPercantage * price);
+            return 0;
+        }
+
+        private double getUnverstialDiscountAmountAfterTaxation(double price)
+        {
+            if (!UniversalDiscount.IsAppliedBeforeTaxation)
+                return roundNumberToTwoDecimals(UniversalDiscount.DiscountPercantage * price);
+            return 0;
+        }
         private double calculatePriceWithTax(double price, double tax)
         {
 
