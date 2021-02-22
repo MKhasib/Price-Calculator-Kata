@@ -11,22 +11,20 @@ namespace PriceCalculatorKata
         static void Main(string[] args)
         {
 
-            Product product = new Product ("The Little Prince", 12345, 20.25,new Cap ( 0.2F,true));
+            Product product = new Product ("The Little Prince", 12345, 20.25,new Cap ( 1F,true));
             //Product product = new Product("The Little Prince", 12345, 20.25, new Cap(4, false));
 
             //Product product = new Product("The Little Prince", 12345, 20.25, new Cap(.3, true));
             product.setUPCDiscount(12345, 0.07f);
-            product.CombiningIsMultiplicative = false;
 
             product.UniversalDiscountPercantage = .15f;
                var expenses = new List<Expense>
-            { new Expense("packaging",0.01f,true),
-           new Expense("transport",2.2,false),
+            { 
+           new Expense("transport",.03,true)
             };
              
              Product.TaxPercantage = .21f;
-
-
+            product.AddExpense(expenses[0]);
             
             product.printReport();
             Console.ReadLine();

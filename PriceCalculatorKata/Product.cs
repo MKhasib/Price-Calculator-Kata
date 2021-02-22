@@ -29,7 +29,7 @@ namespace PriceCalculatorKata
         public double Price { get; set; }
         public bool CombiningIsMultiplicative { get; set; } = true;
         public Cap cap { get; private set; }
-        public String ISOCode { get; set; } = "JPY";
+        public String ISOCode { get; set; } = "USD";
         public static double TaxPercantage { get; set; } = 0.20F;
 
         private static Discount UniversalDiscount = new Discount();
@@ -91,22 +91,23 @@ namespace PriceCalculatorKata
             {
                 discountBeforeTaxation = capAmount;
             }
-            double taxAmount = roundNumberToTwoDecimals(calculatePriceAmount(Price - discountBeforeTaxation, TaxPercantage));
+            double taxAmount = roundNumberToFourDecimals(calculatePriceAmount(Price - discountBeforeTaxation, TaxPercantage));
             var discountAfterTaxation = calculateDiscounAfterTaxation(price);
-            double discount = roundNumberToTwoDecimals(discountBeforeTaxation + discountAfterTaxation);
+            double discount = discountBeforeTaxation + discountAfterTaxation;
             if (discount > capAmount)
                 discount = capAmount;
+            discount = roundNumberToFourDecimals(discount);
             Console.WriteLine($"Tax = {convertNumberToStringCurrency(roundNumberToTwoDecimals(taxAmount))}");
             Console.WriteLine($"Discounts = {convertNumberToStringCurrency(roundNumberToTwoDecimals(discount))}");
             double extraCosts = 0;
             foreach(var expense in expenses)
             { var cost = 0.0;
                 if (expense.IsPercantage)
-                    cost = (expense.Amount * Price);
+                    cost = roundNumberToFourDecimals(expense.Amount * Price);
                 else
                     cost = expense.Amount;
                 Console.WriteLine($"{expense.Description} = {convertNumberToStringCurrency(roundNumberToTwoDecimals(cost))}");
-                extraCosts += cost;
+                extraCosts += roundNumberToFourDecimals(cost);
             }
             Console.WriteLine($"TOTAL = {convertNumberToStringCurrency(roundNumberToTwoDecimals(Price + taxAmount - discount + extraCosts))}");
         }
@@ -117,7 +118,7 @@ namespace PriceCalculatorKata
             price -= discountBeforeTaxation;
             var discountAfterTaxation = calculateDiscounAfterTaxation(price);
 
-            return roundNumberToTwoDecimals(discountBeforeTaxation+ discountAfterTaxation);
+            return roundNumberToFourDecimals(discountBeforeTaxation+ discountAfterTaxation);
         }
 
         private double calculateDiscounBeforeTaxation(double price)
@@ -126,7 +127,7 @@ namespace PriceCalculatorKata
             if (CombiningIsMultiplicative)
                 price -= UnverstialDiscountAmountBeforeTaxation;
             var UPCDiscountAmountBeforeTaxation = getUPCDiscountAmountBeforeTaxation(price);
-            return roundNumberToTwoDecimals(UnverstialDiscountAmountBeforeTaxation + UPCDiscountAmountBeforeTaxation);
+            return roundNumberToFourDecimals(UnverstialDiscountAmountBeforeTaxation + UPCDiscountAmountBeforeTaxation);
         }
         private double calculateDiscounAfterTaxation(double price)
         {
@@ -134,32 +135,32 @@ namespace PriceCalculatorKata
             if (CombiningIsMultiplicative)
                 price -= UnverstialDiscountAmountAfterTaxation;
             var UPCDiscountAmountAfterTaxation = getUPCDiscountAmountAfterTaxation(price);
-            return roundNumberToTwoDecimals(UnverstialDiscountAmountAfterTaxation + UPCDiscountAmountAfterTaxation);
+            return roundNumberToFourDecimals(UnverstialDiscountAmountAfterTaxation + UPCDiscountAmountAfterTaxation);
         }
         private double getUPCDiscountAmountBeforeTaxation(double price)
         {
             if (UPCDiscount.IsAppliedBeforeTaxation)
-                return roundNumberToTwoDecimals(UPCDiscount.DiscountPercantage * price);
+                return roundNumberToFourDecimals(UPCDiscount.DiscountPercantage * price);
             return 0;
         }
 
         private double getUnverstialDiscountAmountBeforeTaxation(double price)
         {
             if (UniversalDiscount.IsAppliedBeforeTaxation)
-                return roundNumberToTwoDecimals(UniversalDiscount.DiscountPercantage * price);
+                return roundNumberToFourDecimals(UniversalDiscount.DiscountPercantage * price);
             return 0;
         }
         private double getUPCDiscountAmountAfterTaxation(double price)
         {
             if (!UPCDiscount.IsAppliedBeforeTaxation)
-                return roundNumberToTwoDecimals(UPCDiscount.DiscountPercantage * price);
+                return roundNumberToFourDecimals(UPCDiscount.DiscountPercantage * price);
             return 0;
         }
 
         private double getUnverstialDiscountAmountAfterTaxation(double price)
         {
             if (!UniversalDiscount.IsAppliedBeforeTaxation)
-                return roundNumberToTwoDecimals(UniversalDiscount.DiscountPercantage * price);
+                return roundNumberToFourDecimals(UniversalDiscount.DiscountPercantage * price);
             return 0;
         }
 
@@ -168,10 +169,15 @@ namespace PriceCalculatorKata
             return (price * percantage);
         }
 
+        private double roundNumberToFourDecimals(double number)
+        {
+            return (double)Math.Round(number, 4);
+        }
         private double roundNumberToTwoDecimals(double number)
         {
             return (double)Math.Round(number, 2);
         }
+
         private String convertNumberToStringCurrency(double price)
         {
             return Currency.getCurrencySymbolFromISO(ISOCode)+price.ToString();
