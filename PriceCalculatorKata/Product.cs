@@ -7,12 +7,13 @@ using System.Globalization;
 using System.Collections;
 
 namespace PriceCalculatorKata
-{   enum DiscountType
+{
+    enum DiscountType
     {
-        Universal=1,
-        UPC=2
+        Universal = 1,
+        UPC = 2
     }
-    
+
     public class Product
     {
         public Product() { }
@@ -25,7 +26,7 @@ namespace PriceCalculatorKata
         public String Name { get; set; }
         public int UPCCode { get; private set; }
         public double Price { get; set; }
-        public double TaxPercantage { get; set; } = 0.20F;
+        public static double TaxPercantage { get; set; } = 0.20F;
 
         private static Discount UniversalDiscount = new Discount();
         public double UniversalDiscountPercantage
@@ -38,17 +39,18 @@ namespace PriceCalculatorKata
             }
         }
         private Discount UPCDiscount = new Discount();
-        public void setUPCDiscount(int UPCCode,double discountPercantage)
+        public void setUPCDiscount(int UPCCode, double discountPercantage)
         {
             if (this.UPCCode == UPCCode)
-             UPCDiscount.DiscountPercantage = discountPercantage;
-            
+                UPCDiscount.DiscountPercantage = discountPercantage;
+
         }
-        public void setDiscountTime(int type,bool isBeforeTaxation)
+        public void setDiscountTime(int type, bool isBeforeTaxation)
         {
             switch (type)
             {
-                case (int)DiscountType.Universal: UniversalDiscount.IsAppliedBeforeTaxation = isBeforeTaxation;
+                case (int)DiscountType.Universal:
+                    UniversalDiscount.IsAppliedBeforeTaxation = isBeforeTaxation;
                     break;
                 case (int)DiscountType.UPC:
                     UPCDiscount.IsAppliedBeforeTaxation = isBeforeTaxation;
@@ -59,21 +61,45 @@ namespace PriceCalculatorKata
         {
             double discountPercantageBeforeTaxation = getDiscountPercantageBeforeTaxation(UPCDiscount, UniversalDiscount);
             double discountAmountBeforeTaxation = roundNumberToTwoDecimals(calculatePriceAmount(Price, discountPercantageBeforeTaxation));
-            double taxAmount = roundNumberToTwoDecimals(calculatePriceAmount(Price-discountAmountBeforeTaxation, TaxPercantage));
             double discountPercantageAfterTaxation = getDiscountPercantageAfterTaxation(UPCDiscount, UniversalDiscount);
-            double discountAmountAfterTaxation = calculatePriceAmount(Price- discountAmountBeforeTaxation, discountPercantageAfterTaxation);
-            double finalPrice = (Price + taxAmount - (discountAmountAfterTaxation + discountAmountBeforeTaxation));
-            Console.WriteLine($"Price:{convertNumberToStringCurrency(roundNumberToTwoDecimals(finalPrice))}");
+            double discountAmountAfterTaxation = calculatePriceAmount(Price - discountAmountBeforeTaxation, discountPercantageAfterTaxation);
             Console.WriteLine($"{convertNumberToStringCurrency(roundNumberToTwoDecimals(discountAmountAfterTaxation + discountAmountBeforeTaxation))} amount which was deduced");
         }
+        private List<Expense> expenses = new List<Expense>();
+        public void AddExpense(Expense expense)
+        {
+            expenses.Add(expense);
+        }
+        public void printReport()
+        {
 
-   
+            Console.WriteLine($"Cost = {convertNumberToStringCurrency( roundNumberToTwoDecimals(this.Price))}");
+            double discountPercantageBeforeTaxation = getDiscountPercantageBeforeTaxation(UPCDiscount, UniversalDiscount);
+            double discountAmountBeforeTaxation = roundNumberToTwoDecimals(calculatePriceAmount(Price, discountPercantageBeforeTaxation));
+            double taxAmount = roundNumberToTwoDecimals(calculatePriceAmount(Price - discountAmountBeforeTaxation, TaxPercantage));
+            double discountPercantageAfterTaxation = getDiscountPercantageAfterTaxation(UPCDiscount, UniversalDiscount);
+            double discountAmountAfterTaxation = roundNumberToTwoDecimals(calculatePriceAmount(Price - discountAmountBeforeTaxation, discountPercantageAfterTaxation));
+            double discounts = discountAmountBeforeTaxation + discountAmountAfterTaxation;
+            Console.WriteLine($"Tax = {convertNumberToStringCurrency(roundNumberToTwoDecimals(taxAmount))}");
+            Console.WriteLine($"Discounts = {convertNumberToStringCurrency(roundNumberToTwoDecimals(discounts))}");
+            double extraCosts = 0;
+            foreach(var expense in expenses)
+            { var cost = 0.0;
+                if (expense.IsPercantage)
+                    cost = (expense.Amount * Price);
+                else
+                    cost = expense.Amount;
+                Console.WriteLine($"{expense.Description} = {convertNumberToStringCurrency(roundNumberToTwoDecimals(cost))}");
+                extraCosts += cost;
+            }
+            Console.WriteLine($"TOTAL = {convertNumberToStringCurrency(roundNumberToTwoDecimals(Price + taxAmount - discounts + extraCosts))}");
+        }
         private double getDiscountPercantageBeforeTaxation(Discount UPCDiscount, Discount relativeDiscount)
         {
             double totalPercantage = 0;
             if (UPCDiscount.IsAppliedBeforeTaxation)
                 totalPercantage += UPCDiscount.DiscountPercantage;
-            if(relativeDiscount.IsAppliedBeforeTaxation)
+            if (relativeDiscount.IsAppliedBeforeTaxation)
                 totalPercantage += relativeDiscount.DiscountPercantage;
             return totalPercantage;
         }
@@ -86,25 +112,7 @@ namespace PriceCalculatorKata
                 totalPercantage += relativeDiscount.DiscountPercantage;
             return totalPercantage;
         }
-        //public void getReport()
-        //{
-        //    double priceWithTax = calculatePriceWithTax(Price, TaxPercantage);
-        //    Console.WriteLine($"Product price reported as {convertNumberToStringCurrency(roundNumberToTwoDecimals(Price))} " +
-        //        $"before tax and {convertNumberToStringCurrency(priceWithTax)} " +
-        //        $"after {roundNumberToTwoDecimals(TaxPercantage * 100)}% tax");
 
-        //    double taxAmount = calculatePriceAmount(Price, TaxPercantage);
-        //    double discountAmount = calculatePriceAmount(Price, totalDiscount);
-        //    String taxStringAmount = convertNumberToStringCurrency(roundNumberToTwoDecimals(taxAmount));
-        //    String discountStringAmount = convertNumberToStringCurrency(roundNumberToTwoDecimals(discountAmount));
-
-        //    Console.WriteLine($"Tax = {roundNumberToTwoDecimals(TaxPercantage * 100)}%," +
-        //        $" discount = {roundNumberToTwoDecimals(totalDiscount * 100)}%" +
-        //        $" Tax amount = {taxStringAmount}; Discount amount = {discountStringAmount}");
-        //    double finalPrice = (Price + taxAmount - discountAmount);
-        //    Console.WriteLine($"Price before = {convertNumberToStringCurrency(roundNumberToTwoDecimals(Price))}," +
-        //        $" price after = {convertNumberToStringCurrency(roundNumberToTwoDecimals(finalPrice))}");
-        //}
         private double calculatePriceWithTax(double price, double tax)
         {
 
@@ -124,7 +132,5 @@ namespace PriceCalculatorKata
         {
             return price.ToString("C", CultureInfo.GetCultureInfo("en-US"));
         }
-
-
     }
 }
