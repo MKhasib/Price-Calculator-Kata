@@ -17,16 +17,18 @@ namespace PriceCalculatorKata
     public class Product
     {
         public Product() { }
-        public Product(String name, int UPCCode, double price)
+        public Product(String name, int UPCCode, double price,Cap cap)
         {
             this.Name = name;
             this.UPCCode = UPCCode;
             this.Price = price;
+            this.cap = cap;
         }
         public String Name { get; set; }
         public int UPCCode { get; private set; }
         public double Price { get; set; }
         public bool CombiningIsMultiplicative { get; set; } = true;
+        public Cap cap { get; private set; }
         public static double TaxPercantage { get; set; } = 0.20F;
 
         private static Discount UniversalDiscount = new Discount();
@@ -62,6 +64,9 @@ namespace PriceCalculatorKata
         {
             double price = Price;
             var discount = calcaulteDiscount(price);
+            var capAmount = cap.IsPercantage ? cap.Value * price : cap.Value;
+            if (discount > capAmount)
+                discount = capAmount;
             Console.WriteLine($"{convertNumberToStringCurrency(roundNumberToTwoDecimals(discount))} amount which was deduced");
         }
 
@@ -78,12 +83,20 @@ namespace PriceCalculatorKata
             var discountBeforeTaxation = calculateDiscounBeforeTaxation(price);
             if(CombiningIsMultiplicative)
             price -= discountBeforeTaxation;
-            var discountAfterTaxation = calculateDiscounAfterTaxation(price);
+
             Console.WriteLine($"Cost = {convertNumberToStringCurrency( roundNumberToTwoDecimals(this.Price))}");
+            var capAmount = cap.IsPercantage ? cap.Value * price : cap.Value;
+            if (discountBeforeTaxation > capAmount)
+            {
+                discountBeforeTaxation = capAmount;
+            }
             double taxAmount = roundNumberToTwoDecimals(calculatePriceAmount(Price - discountBeforeTaxation, TaxPercantage));
-            double discounts = roundNumberToTwoDecimals(discountBeforeTaxation + discountAfterTaxation);
+            var discountAfterTaxation = calculateDiscounAfterTaxation(price);
+            double discount = roundNumberToTwoDecimals(discountBeforeTaxation + discountAfterTaxation);
+            if (discount > capAmount)
+                discount = capAmount;
             Console.WriteLine($"Tax = {convertNumberToStringCurrency(roundNumberToTwoDecimals(taxAmount))}");
-            Console.WriteLine($"Discounts = {convertNumberToStringCurrency(roundNumberToTwoDecimals(discounts))}");
+            Console.WriteLine($"Discounts = {convertNumberToStringCurrency(roundNumberToTwoDecimals(discount))}");
             double extraCosts = 0;
             foreach(var expense in expenses)
             { var cost = 0.0;
@@ -94,15 +107,15 @@ namespace PriceCalculatorKata
                 Console.WriteLine($"{expense.Description} = {convertNumberToStringCurrency(roundNumberToTwoDecimals(cost))}");
                 extraCosts += cost;
             }
-            Console.WriteLine($"TOTAL = {convertNumberToStringCurrency(roundNumberToTwoDecimals(Price + taxAmount - discounts + extraCosts))}");
+            Console.WriteLine($"TOTAL = {convertNumberToStringCurrency(roundNumberToTwoDecimals(Price + taxAmount - discount + extraCosts))}");
         }
         private double calcaulteDiscount(double price)
         {
             var discountBeforeTaxation = calculateDiscounBeforeTaxation(price);
+            if(CombiningIsMultiplicative)
             price -= discountBeforeTaxation;
             var discountAfterTaxation = calculateDiscounAfterTaxation(price);
 
-        
             return roundNumberToTwoDecimals(discountBeforeTaxation+ discountAfterTaxation);
         }
 
