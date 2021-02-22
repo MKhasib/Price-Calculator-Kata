@@ -29,6 +29,7 @@ namespace PriceCalculatorKata
         public double Price { get; set; }
         public bool CombiningIsMultiplicative { get; set; } = true;
         public Cap cap { get; private set; }
+        public String ISOCode { get; set; } = "JPY";
         public static double TaxPercantage { get; set; } = 0.20F;
 
         private static Discount UniversalDiscount = new Discount();
@@ -161,11 +162,6 @@ namespace PriceCalculatorKata
                 return roundNumberToTwoDecimals(UniversalDiscount.DiscountPercantage * price);
             return 0;
         }
-        private double calculatePriceWithTax(double price, double tax)
-        {
-
-            return roundNumberToTwoDecimals((price + calculatePriceAmount(price, tax)));
-        }
 
         private double calculatePriceAmount(double price, double percantage)
         {
@@ -178,7 +174,7 @@ namespace PriceCalculatorKata
         }
         private String convertNumberToStringCurrency(double price)
         {
-            return price.ToString("C", CultureInfo.GetCultureInfo("en-US"));
+            return Currency.getCurrencySymbolFromISO(ISOCode)+price.ToString();
         }
     }
 }
